@@ -28,8 +28,14 @@ done
 # -- end
 
 # --- 需要另外下载的安装包
-wget -c https://go.microsoft.com/fwlink/?LinkID=760868 -O ./$deb_tempdir/code.deb
-wget -c https://d1.music.126.net/dmusic/netease-cloud-music_1.2.1_amd64_ubuntu_20190428.deb -O ./$deb_tempdir/netease.deb
+if ! [ -x code ]
+then
+    wget -c https://go.microsoft.com/fwlink/?LinkID=760868 -O ./$deb_tempdir/code.deb
+fi
+if ! [ -x netease-cloud-music ]
+then
+    wget -c https://d1.music.126.net/dmusic/netease-cloud-music_1.2.1_amd64_ubuntu_20190428.deb -O ./$deb_tempdir/netease.deb
+fi
 # TODO 循环安装deb_tempdir 目录下的deb文件
 dpkg -i ./$deb_tempdir/code.deb
 dpkg -i ./$deb_tempdir/netease.deb

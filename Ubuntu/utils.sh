@@ -13,6 +13,10 @@ function crlf_to_lf {
 }
 
 function install_docker {
+    if [ -x docker]
+    then
+        return
+    fi
     sudo apt-get update
     sudo apt-get install -y \
         apt-transport-https \
@@ -30,7 +34,7 @@ function install_docker {
 
     sudo add-apt-repository \
     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-    $release_name \
+    $(lsb_release -cs) \
     stable"
 
     sudo apt update
