@@ -34,7 +34,7 @@ function install_docker {
     stable"
 
     sudo apt update
-    sudo apt-get install docker-ce docker-ce-cli containerd.io
+    sudo apt-get -y install docker-ce docker-ce-cli containerd.io
 
     sudo usermod -aG docker $(whoami)
 }
@@ -45,7 +45,7 @@ function uninstall_docker {
 }
 function install_qbittorrent {
     sudo add-apt-repository ppa:qbittorrent-team/qbittorrent-stable
-    sudo apt-get update && sudo apt-get install qbittorrent
+    sudo apt-get update && sudo apt-get install -y qbittorrent
 }
 function uninstall_qbittorrent {
     apt-get --purge remove qbittorrent
