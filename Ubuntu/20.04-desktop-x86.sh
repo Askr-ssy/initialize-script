@@ -19,7 +19,7 @@ deb_tempdir=$(mktemp -d tempdir.XXXXXX)
 # --- 通过包管理安装软件
 sudo apt update 
 sudo apt -y upgrade
-programs="vim neofetch git guake firefox redis chrome mariadb-server trojan tshark"
+programs="vim neofetch git guake firefox redis chrome mariadb-server trojan tshark unrar"
 
 for program in $programs
 do
