@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./utils.sh
+source ../utils/utils.sh
 
 # --- 读取系统环境变量
 release_name=$(lsb_release -cs)
@@ -15,6 +15,7 @@ release_name=$(lsb_release -cs)
 deb_tempdir=$(mktemp -d tempdir.XXXXXX) 
 # TODO 设置日志出处
 # --- end
+
 
 # --- 通过包管理安装软件
 sudo apt update 
@@ -36,6 +37,7 @@ if ! [ -x netease-cloud-music ]
 then
     wget -c https://d1.music.126.net/dmusic/netease-cloud-music_1.2.1_amd64_ubuntu_20190428.deb -O ./$deb_tempdir/netease.deb
 fi
+
 # TODO 循环安装deb_tempdir 目录下的deb文件
 dpkg -i ./$deb_tempdir/code.deb
 dpkg -i ./$deb_tempdir/netease.deb

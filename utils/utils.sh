@@ -7,8 +7,11 @@ function install_program {
 
 function crlf_to_lf {
     if ! [ -f $1 ]
-    then echo "file is not found" return 1
-    else sed -i ':a;N;$!ba;s/\r\n/\n /g' $1
+    then 
+        echo "file is not found" 
+        return 1
+    else 
+        sed -i ':a;N;$!ba;s/\r\n/\n /g' $1
     fi
 }
 
