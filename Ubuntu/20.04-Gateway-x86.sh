@@ -11,7 +11,7 @@ dns_server_backup="8.8.8.8"
 
 
 # 配置外网(pppoe) # TODO 根据配置的端口，配置WAN和Lan
-apt install -y pppoeconf
+apt install -y pppoeconf trojan privoxy
 
 # ## read pppoe config
 # read -p "Enter your pppoe-account:" pppoe-account
@@ -44,10 +44,10 @@ echo "iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfa
 
 ## 配置iptables 防火墙
 
-## 配置代理服务器 trojan
-apt install trojan
+## TODO 配置代理服务器 trojan
 
 ## 配置PAC以及代理服务器(privoxy)
+
 
 ## 配置内网穿透服务器(frp 搭配vps)
 
