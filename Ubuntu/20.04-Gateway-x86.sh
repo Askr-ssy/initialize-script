@@ -7,16 +7,17 @@ net_interface=(${net_devices// / })
 wan_interface=${net_interface[0]}
 lan_interfate=${net_interface[1]}
 dns_server="192.168.1.1"
-
-
-# 配置外网(pppoe) # TODO pppoe 配置的端口,配置 wan 和 lan
-apt install -y pppoeconf trojan privoxy bind9 bind9-utils isc-dhcp-server
+pppoe-account=""
+pppoe-password=""
 
 # ## read pppoe config
 # read -p "Enter your pppoe-account:" pppoe-account
 # read -p "Enter your pppoe-password:" pppoe-password
 
-# ## set pppoe config(pass)
+# set ppoe conf
+apt install -y pppoeconf trojan privoxy bind9 bind9-utils isc-dhcp-server
+
+# set pppoe config(pass)
 pppoeconf
 
 # set dhcp server
@@ -40,8 +41,7 @@ subnet 192.168.1.0 netmask 255.255.255.0 {
 authoritative;
 " >> /etc/dhcp/dhcpd.conf
 
-
-## 配置iptables 上网
+# set iptables share network
 iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o $wan_interface -j MASQUERADE
 echo "iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces
 echo "iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfaces
@@ -102,7 +102,7 @@ ns      IN      A       192.168.1.1
 
 ## 配置反向代理服务器(nginx)
 
-# 配置内网地址
+# set lan address
 rm /etc/netplan/*
 echo "\
 network:
@@ -122,8 +122,13 @@ network:
 
 init 6
 
+# 手动配置pppoe
+# TODO 根据 pppoe 配置的端口,配置 wan 和 lan
 # TODO 删除 pppoe 传输的dns 服务器，手动配置pppoe
+
 # TODO 配置privoxy
 # TODO 配置frp
 # TODO 配置nginx
+
 # TODO 尝试配置局域网大包
+# TODO 配置ipv6 环境
