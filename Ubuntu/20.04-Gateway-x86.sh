@@ -7,10 +7,9 @@ net_interface=(${net_devices// / })
 wan_interface=${net_interface[0]}
 lan_interfate=${net_interface[1]}
 dns_server="192.168.1.1"
-dns_server_backup="8.8.8.8"
 
 
-# 配置外网(pppoe) # TODO 根据配置的端口，配置WAN和Lan
+# 配置外网(pppoe) # TODO pppoe 配置的端口,配置 wan 和 lan
 apt install -y pppoeconf trojan privoxy bind9 bind9-utils isc-dhcp-server
 
 # ## read pppoe config
@@ -25,10 +24,21 @@ sed -i "s/INTERFACESv4=\"\"/INTERFACESv4=\"${lan_interfate}\"/" /etc/default/isc
 echo "\
 subnet 192.168.1.0 netmask 255.255.255.0 {
   range 192.168.1.2 192.168.1.230;
-  option routers 192.168.1.1;
   default-lease-time 600;
   max-lease-time 7200;
+  ping-check true;
+  ping-timeout 2;
+
+  option routers 192.168.1.1;
+  option broadcast-address 192.168.1.255;
+  option subnet-mask 255.255.255.0;
+
+  option server-name 'askr.cn';
+  option domain-name 'askr.cn';
+  option domain-search 'askr.cn';
+  option domain-name-servers ${dns_server};
 }
+authoritative;
 " >> /etc/dhcp/dhcpd.conf
 
 
@@ -105,7 +115,7 @@ network:
             dhcp4: no
             gateway4: 192.168.1.1
             nameservers:
-                addresses: [$dns_server,$dns_server_backup]
+                addresses: [$dns_server]
             match:
                 macaddress: a0:36:9f:8c:14:4f       
             wakeonlan: true
@@ -113,7 +123,6 @@ network:
 
 init 6
 
-# TODO 修改dhcp-dns server
 # TODO 删除 pppoe 传输的dns 服务器，手动配置pppoe
 # TODO 配置privoxy
 # TODO 配置frp
