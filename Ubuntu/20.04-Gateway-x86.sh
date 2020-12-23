@@ -6,7 +6,7 @@ net_devices=$(ls /sys/class/net | grep en | sort)
 net_interface=(${net_devices// / })
 wan_interface=${net_interface[0]}
 lan_interfate=${net_interface[1]}
-dns_server="8.8.8.8"
+dns_server="192.168.1.1"
 dns_server_backup="8.8.8.8"
 
 
@@ -43,6 +43,51 @@ echo "iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfa
 
 ## 配置PAC以及代理服务器(privoxy)
 
+## 配置 bind
+rm /etc/bind/named.conf.options
+echo '\
+options {
+        directory "/var/cache/bind";
+        listen-on port 53 { 192.168.1.1; };
+        listen-on-v6 port 53 { ::1; };  # TODO 改为 192.168.1.0/24
+        allow-query { 192.168.1.0/24; };
+        recursion yes;
+        allow-recursion { 192.168.1.0/24; };
+
+        forward first;
+        forwarders {
+            8.8.8.8;
+            114.114.114.114;
+        };
+        dnssec-enable no;
+        dnssec-validation no;
+        dnssec-lookaside no;    
+};
+' > /etc/bind/named.conf.options
+
+echo '\
+zone "askr.cn" {
+    type master;
+    file "/etc/bind/db.askr.cn";
+};
+' >> /etc/bind/named.conf.default-zones
+
+echo '\
+;
+; BIND data file for local loopback interface
+;
+$TTL    60
+$ORIGIN askr.cn.
+@       IN      SOA     ns.askr.cn. root.askr.cn. (
+                              3         ; Serial
+                             60         ; Refresh
+                             1H         ; Retry
+                             3D         ; Expire
+                             1D )       ; Negative Cache TTL
+;
+@       IN      NS      ns
+ns      IN      A       192.168.1.1
+' > /etc/bind/db.askr.cn
 
 ## 配置内网穿透服务器(frp 搭配vps)
 
@@ -68,7 +113,6 @@ network:
 
 init 6
 
-# TODO 配置DNS(BIND)
 # TODO 修改dhcp-dns server
 # TODO 删除 pppoe 传输的dns 服务器，手动配置pppoe
 # TODO 配置privoxy
