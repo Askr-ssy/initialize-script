@@ -33,9 +33,8 @@ subnet 192.168.1.0 netmask 255.255.255.0 {
   option broadcast-address 192.168.1.255;
   option subnet-mask 255.255.255.0;
 
-  option server-name 'askr.cn';
-  option domain-name 'askr.cn';
-  option domain-search 'askr.cn';
+  option domain-name \"askr.cn\";
+  option domain-search \"askr.cn\";
   option domain-name-servers ${dns_server};
 }
 authoritative;
@@ -55,14 +54,14 @@ echo "iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfa
 
 ## 配置 bind
 rm /etc/bind/named.conf.options
-echo '\
+echo "\
 options {
-        directory "/var/cache/bind";
-        listen-on port 53 { 192.168.1.1; };
-        listen-on-v6 port 53 { ::1; };  # TODO 改为 192.168.1.0/24
-        allow-query { 192.168.1.0/24; };
+        directory \"/var/cache/bind\";
+        listen-on port 53 { 192.168.1.1; 127.0.0.1; };
+        listen-on-v6 port 53 { ::1; };  # TODO 改为 本地端口
+        allow-query { 192.168.1.0/24; 127.0.0.1; };
         recursion yes;
-        allow-recursion { 192.168.1.0/24; };
+        allow-recursion { 192.168.1.0/24; 127.0.0.1; };
 
         forward first;
         forwarders {
@@ -73,21 +72,21 @@ options {
         dnssec-validation no;
         dnssec-lookaside no;    
 };
-' > /etc/bind/named.conf.options
+" > /etc/bind/named.conf.options
 
-echo '\
-zone "askr.cn" {
+echo "\
+zone \"askr.cn\" {
     type master;
-    file "/etc/bind/db.askr.cn";
+    file \"/etc/bind/db.askr.cn\";
 };
-' >> /etc/bind/named.conf.default-zones
+" >> /etc/bind/named.conf.default-zones
 
-echo '\
+echo "\
 ;
 ; BIND data file for local loopback interface
 ;
-$TTL    60
-$ORIGIN askr.cn.
+\$TTL    60
+\$ORIGIN askr.cn.
 @       IN      SOA     ns.askr.cn. root.askr.cn. (
                               3         ; Serial
                              60         ; Refresh
@@ -97,7 +96,7 @@ $ORIGIN askr.cn.
 ;
 @       IN      NS      ns
 ns      IN      A       192.168.1.1
-' > /etc/bind/db.askr.cn
+" > /etc/bind/db.askr.cn
 
 ## 配置内网穿透服务器(frp 搭配vps)
 
@@ -115,7 +114,7 @@ network:
             dhcp4: no
             gateway4: 192.168.1.1
             nameservers:
-                addresses: [$dns_server]
+                addresses: [$dns_server,8.8.8.8]
             match:
                 macaddress: a0:36:9f:8c:14:4f       
             wakeonlan: true
