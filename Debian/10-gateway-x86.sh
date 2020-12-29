@@ -17,42 +17,7 @@ pppoe-password=""
 # set ppoe conf
 apt install -y pppoeconf trojan privoxy bind9 bind9-utils isc-dhcp-server
 
-# set pppoe config(pass)
-pppoeconf
-
-# set dhcp server
-sed -i "s/INTERFACESv4=\"\"/INTERFACESv4=\"${lan_interfate}\"/" /etc/default/isc-dhcp-server
-echo "\
-subnet 192.168.1.0 netmask 255.255.255.0 {
-  range 192.168.1.2 192.168.1.230;
-  default-lease-time 600;
-  max-lease-time 7200;
-  ping-check true;
-  ping-timeout 2;
-
-  option routers 192.168.1.1;
-  option broadcast-address 192.168.1.255;
-  option subnet-mask 255.255.255.0;
-
-  option domain-name \"askr.cn\";
-  option domain-search \"askr.cn\";
-  option domain-name-servers ${dns_server};
-}
-authoritative;
-" >> /etc/dhcp/dhcpd.conf
-
-# set iptables share network
-iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o $wan_interface -j MASQUERADE
-echo "post-down iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces
-echo "pre-up iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfaces
-
-## 配置iptables 防火墙
-
-## TODO 配置代理服务器 trojan
-
-## 配置PAC以及代理服务器(privoxy)
-
-## 配置 bind
+# set dns server
 rm /etc/bind/named.conf.options
 echo "\
 options {
@@ -98,17 +63,33 @@ echo "\
 ns      IN      A       192.168.1.1
 " > /etc/bind/db.askr.cn
 
-## 配置内网穿透服务器(frp 搭配vps)
 
-## 配置反向代理服务器(nginx)
+# set dhcp server
+sed -i "s/INTERFACESv4=\"\"/INTERFACESv4=\"${lan_interfate}\"/" /etc/default/isc-dhcp-server
+echo "\
+subnet 192.168.1.0 netmask 255.255.255.0 {
+  range 192.168.1.2 192.168.1.230;
+  default-lease-time 600;
+  max-lease-time 7200;
+  ping-check true;
+  ping-timeout 2;
+
+  option routers 192.168.1.1;
+  option broadcast-address 192.168.1.255;
+  option subnet-mask 255.255.255.0;
+
+  option domain-name \"askr.cn\";
+  option domain-search \"askr.cn\";
+  option domain-name-servers ${dns_server};
+}
+authoritative;
+" >> /etc/dhcp/dhcpd.conf
 
 # set lan address
-# rm /etc/network/interfaces
 sed -i "s/auto ${lan_interfate}//" /etc/work/interfaces
 sed -i "s/allow-hotplug ${lan_interfate}//" /etc/work/interfaces
 sed -i "s/iface ${lan_interfate} inet dhcp//" /etc/work/interfaces
 sed -i "s/iface ${lan_interfate} inet manual//" /etc/work/interfaces
-
 echo "\
 auto enp0s31f6
 iface enp0s31f6 inet static
@@ -118,13 +99,28 @@ iface enp0s31f6 inet static
   gateway 192.168.0.1
 " >> /etc/work/interfaces
 
+## 配置iptables 防火墙
+
+## TODO 配置代理服务器 trojan
+
+## 配置透明代理(iptables)
+
+## 配置内网穿透服务器(frp 搭配vps)
+
+## 配置反向代理服务器(nginx)
+
+# set pppoe config(pass)
+pppoeconf
+
+# set iptables share network
+iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o ppp0 -j MASQUERADE
+echo "post-down iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces
+echo "pre-up iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfaces
+
 init 6
 
 # 手动配置pppoe
 # TODO 根据 pppoe 配置的端口,配置 wan 和 lan
-# TODO 删除 pppoe 传输的dns 服务器，手动配置pppoe
-
-# TODO 配置privoxy
 # TODO 配置frp
 # TODO 配置nginx
 
