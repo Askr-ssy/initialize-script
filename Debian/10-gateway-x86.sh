@@ -103,22 +103,20 @@ ns      IN      A       192.168.1.1
 ## 配置反向代理服务器(nginx)
 
 # set lan address
-rm /etc/netplan/*
+# rm /etc/network/interfaces
+sed -i "s/auto ${lan_interfate}//" /etc/work/interfaces
+sed -i "s/allow-hotplug ${lan_interfate}//" /etc/work/interfaces
+sed -i "s/iface ${lan_interfate} inet dhcp//" /etc/work/interfaces
+sed -i "s/iface ${lan_interfate} inet manual//" /etc/work/interfaces
+
 echo "\
-network:
-    version: 2
-    renderer: NetworkManager
-    ethernets:
-        $lan_interfate:
-            addresses: [192.168.1.1/24]
-            dhcp4: no
-            gateway4: 192.168.1.1
-            nameservers:
-                addresses: [$dns_server,8.8.8.8]
-            match:
-                macaddress: a0:36:9f:8c:14:4f       
-            wakeonlan: true
-" > /etc/netplan/01-network-manager-all.yaml
+auto enp0s31f6
+iface enp0s31f6 inet static
+  address 192.168.0.3/24
+  broadcast 192.168.0.255
+  network 192.168.0.0
+  gateway 192.168.0.1
+" >> /etc/work/interfaces
 
 init 6
 
