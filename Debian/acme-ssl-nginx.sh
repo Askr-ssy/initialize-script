@@ -2,7 +2,7 @@
 apt update
 # apt upgrade -y
 
-apt install nginx curl
+apt install nginx curl -y
 
 mkdir -p /etc/nginx/nginxconfig.io/
 
@@ -19,10 +19,10 @@ read -p "input your Ali_Secret: " Ali_Secret
 export Ali_Key=$Ali_Key
 export Ali_Secret=$Ali_Secret
 
-acme.sh --issue --dns dns_ali -d "*.askr.cc" -d askr.cc
+~/.acme.sh/acme.sh --issue --dns dns_ali -d "*.askr.cc" -d askr.cc
 
 mkdir -p /etc/letsencrypt/live/askr.cc/
-~/.acme.sh/acme.sh --install-cert -d askr.cc \
+~/.acme.sh/acme.sh --install-cert -d "*.askr.cc" \
     --cert-file /etc/letsencrypt/live/askr.cc/chain.pem \
     --key-file /etc/letsencrypt/live/askr.cc/privkey.pem \
     --fullchain-file /etc/letsencrypt/live/askr.cc/fullchain.pem \
