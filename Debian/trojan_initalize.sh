@@ -16,6 +16,7 @@ with open('/etc/trojan/config.json','r') as file:
     config = json.load(file)
     config['local_port'] = 44342
     password = secrets.token_urlsafe()
+    print('password: ',password)
     config['password'] = [password]
     config['ssl']['cert'] = '/etc/trojan/fullchain.cer'
     config['ssl']['key'] = '/etc/trojan/askr.cc.key'

@@ -38,19 +38,22 @@ then
     wget -c https://d1.music.126.net/dmusic/netease-cloud-music_1.2.1_amd64_ubuntu_20190428.deb -O ./$deb_tempdir/netease.deb
 fi
 
-# TODO 循环安装deb_tempdir 目录下的deb文件
-dpkg -i ./$deb_tempdir/code.deb
-dpkg -i ./$deb_tempdir/netease.deb
 # --- end
 
 # 需要单独安装的软件
 install_docker
-install_qbittorrent
-install_postman
-install_telegram
-sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 # --- end
 
 # --- 转移文件 恢复数据 处理垃圾数据
 sudo rm -rf ./$deb_tempdir
 # --- end
+
+
+mkdir -p /data
+sudo chown -R nobody:nogroup /data/
+sudo echo "/data 192.168.1.0/24(rw,sync,no_subtree_check)" >> /etc/exports
+sudo chmod 777 -R /data
+sudo ufw allow from 192.168.1.0/24 to any port nfs
+sudo nfs enable
+sudo exportfs -a
+sudo systemctl restart nfs-kernel-server
