@@ -35,7 +35,7 @@ options {
         };
         dnssec-enable no;
         dnssec-validation no;
-        dnssec-lookaside no;    
+        dnssec-lookaside no;
 };
 " > /etc/bind/named.conf.options
 
@@ -127,51 +127,56 @@ init 6
 # TODO 尝试配置局域网大包
 # TODO 配置ipv6 环境
 
-echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-echo "net.ipv4.conf.all.route_localnet=1" >> /etc/sysctl.conf
-
-ip rule add fwmark 1 lookup 42
-ip route add local 0.0.0.0/0 dev lo table 42
-
-iptables -t nat -A POSTROUTING -s 172.19.16.0/20 -o eth0 -j MASQUERADE
-
-# 创建一个叫 trojan 的链，查看和删除的时候方便
-iptables -t nat -N trojan
-# 所有输出的数据都使用此链
-iptables -t nat -A OUTPUT -p tcp -j trojan
-  
-# 代理自己不要再被重定向，按自己的需求调整/添加。一定不要弄错，否则会造成死循环的
-iptables -t nat -I trojan -m owner --uid-owner trojan -j RETURN
-# iptables -t nat -I trojan -m owner --uid-owner goagent -j RETURN
-# iptables -t nat -I trojan -m owner --uid-owner dnscrypt -j RETURN
-iptables -t nat -A trojan -d os1-8.sstr-api.xyz -j RETURN
-iptables -t nat -A trojan -d 45.142.165.148 -j RETURN
+# # 端口映射
+# iptables -t nat -A PREROUTING -i eth0 -d 172.18.44.44 -p tcp --dport 2321 -j DNAT --to 100.100.100.101:23
+# iptables -t nat -A POSTROUTING -o eth1 -d 100.100.100.101 -p tcp --dport 23 -j SNAT --to 100.100.100.44
 
 
+# echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+# echo "net.ipv4.conf.all.route_localnet=1" >> /etc/sysctl.conf
 
-# 局域网不要代理
-iptables -t nat -A trojan -d 0.0.0.0/8 -j RETURN
-iptables -t nat -A trojan -d 10.0.0.0/8 -j RETURN
-iptables -t nat -A trojan -d 169.254.0.0/16 -j RETURN
-iptables -t nat -A trojan -d 172.16.0.0/12 -j RETURN
-iptables -t nat -A trojan -d 172.19.16.0/20 -j RETURN
-iptables -t nat -A trojan -d 192.168.0.0/16 -j RETURN
-iptables -t nat -A trojan -d 192.168.1.0/24 -j RETURN
-iptables -t nat -A trojan -d 224.0.0.0/4 -j RETURN
-iptables -t nat -A trojan -d 240.0.0.0/4 -j RETURN
+# ip rule add fwmark 1 lookup 42
+# ip route add local 0.0.0.0/0 dev lo table 42
 
- 
-# HTTP 和 HTTPS 转到 trojan
-iptables -t nat -A trojan -p tcp -j REDIRECT --to-ports 1080
+# iptables -t nat -A POSTROUTING -s 172.19.16.0/20 -o eth0 -j MASQUERADE
 
-# # 如果使用国外代理的话，走 UDP 的 DNS 请求转到 trojan，trojan 会让其使用 TCP 重试
-# iptables -t nat -A trojan -p udp --dport 53 -j REDIRECT --to-ports $DNS_PORT
-# # 如果走 TCP 的 DNS 请求也需要代理的话，使用下边这句。一般不需要
-# iptables -t nat -A trojan -p tcp --dport 53 -j REDIRECT --to-ports $HTTPS_PORT
+# # 创建一个叫 trojan 的链，查看和删除的时候方便
+# iptables -t nat -N trojan
+# # 所有输出的数据都使用此链
+# iptables -t nat -A OUTPUT -p tcp -j trojan
+
+# # 代理自己不要再被重定向，按自己的需求调整/添加。一定不要弄错，否则会造成死循环的
+# iptables -t nat -I trojan -m owner --uid-owner trojan -j RETURN
+# # iptables -t nat -I trojan -m owner --uid-owner goagent -j RETURN
+# # iptables -t nat -I trojan -m owner --uid-owner dnscrypt -j RETURN
+# iptables -t nat -A trojan -d os1-8.sstr-api.xyz -j RETURN
+# iptables -t nat -A trojan -d 45.142.165.148 -j RETURN
 
 
-os1-8.sstr-api.xyz
-iptables -t nat -A PREROUTING -p tcp -j trojan
 
-iptables -t mangle -A OUTPUT -j MARK --set-mark 1
-iptables -t mangle -A PREROUTING -j TPROXY --on-port 1080 --on-ip 127.0.0.1
+# # 局域网不要代理
+# iptables -t nat -A trojan -d 0.0.0.0/8 -j RETURN
+# iptables -t nat -A trojan -d 10.0.0.0/8 -j RETURN
+# iptables -t nat -A trojan -d 169.254.0.0/16 -j RETURN
+# iptables -t nat -A trojan -d 172.16.0.0/12 -j RETURN
+# iptables -t nat -A trojan -d 172.19.16.0/20 -j RETURN
+# iptables -t nat -A trojan -d 192.168.0.0/16 -j RETURN
+# iptables -t nat -A trojan -d 192.168.1.0/24 -j RETURN
+# iptables -t nat -A trojan -d 224.0.0.0/4 -j RETURN
+# iptables -t nat -A trojan -d 240.0.0.0/4 -j RETURN
+
+
+# # HTTP 和 HTTPS 转到 trojan
+# iptables -t nat -A trojan -p tcp -j REDIRECT --to-ports 1080
+
+# # # 如果使用国外代理的话，走 UDP 的 DNS 请求转到 trojan，trojan 会让其使用 TCP 重试
+# # iptables -t nat -A trojan -p udp --dport 53 -j REDIRECT --to-ports $DNS_PORT
+# # # 如果走 TCP 的 DNS 请求也需要代理的话，使用下边这句。一般不需要
+# # iptables -t nat -A trojan -p tcp --dport 53 -j REDIRECT --to-ports $HTTPS_PORT
+
+
+# os1-8.sstr-api.xyz
+# iptables -t nat -A PREROUTING -p tcp -j trojan
+
+# iptables -t mangle -A OUTPUT -j MARK --set-mark 1
+# iptables -t mangle -A PREROUTING -j TPROXY --on-port 1080 --on-ip 127.0.0.1
