@@ -22,8 +22,9 @@ chmod 755 /etc/trojan/askr.cc.key.pem
 python3 -c "
 import json
 import secrets
+
 with open('/etc/trojan/config.json','r') as file:
-    config = json.load(file)
+    config = json.loads(file.read())
     config['remote_port'] = 80
     password = secrets.token_urlsafe()
     print('password: ',password)
@@ -31,5 +32,8 @@ with open('/etc/trojan/config.json','r') as file:
     config['ssl']['cert'] = '/etc/trojan/askr.cc.cert.pem'
     config['ssl']['key'] = '/etc/trojan/askr.cc.key.pem'
 with open('/etc/trojan/config.json','w') as file:
-    json.dump(file,config)
+    file.write(json.dumps(config))
 "
+systemctl restart nginx
+systemctl force-reload nginx
+systemctl restart trojan
