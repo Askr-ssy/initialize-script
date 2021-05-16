@@ -1,18 +1,11 @@
 #/bin/bash
 apt update
-# apt upgrade -y
 
-apt install nginx curl -y
-
-mkdir -p /etc/nginx/nginxconfig.io/
-
-echo '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' | base64 --decode | tee /etc/nginx/nginxconfig.io-askr.cc.tar.gz > /dev/null
-
-cd /etc/nginx
-tar -xzvf nginxconfig.io-askr.cc.tar.gz
+apt install nginx curl git vim -y
 
 curl  https://get.acme.sh | sh
 
+# https://ram.console.aliyun.com/users
 read -p "input your Ali_Key: " Ali_Key
 read -p "input your Ali_Secret: " Ali_Secret
 
@@ -21,9 +14,13 @@ export Ali_Secret=$Ali_Secret
 
 ~/.acme.sh/acme.sh --issue --dns dns_ali -d "*.askr.cc" -d askr.cc
 
-mkdir -p /etc/letsencrypt/live/askr.cc/
-~/.acme.sh/acme.sh --install-cert -d "*.askr.cc" \
-    --cert-file /etc/letsencrypt/live/askr.cc/chain.pem \
-    --key-file /etc/letsencrypt/live/askr.cc/privkey.pem \
-    --fullchain-file /etc/letsencrypt/live/askr.cc/fullchain.pem \
-    --reloadcmd "systemctl reload nginx.service"
+mkdir -p /etc/nginx/ssl
+
+~/.acme.sh/acme.sh --install-cert -d "*.askr.cc" -d askr.cc \
+    --key-file       /etc/nginx/ssl/askr.cc.key.pem  \
+    --fullchain-file /etc/nginx/ssl/askr.cc.cert.pem \
+    --reloadcmd "systemctl reload nginx"
+
+mkdir -p /var/www/askr.cc/public/
+cd /var/www/askr.cc/public/
+git clone https://github.com/gabrielecirulli/2048.git
