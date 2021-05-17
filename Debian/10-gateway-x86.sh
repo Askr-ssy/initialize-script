@@ -114,6 +114,8 @@ pppoeconf
 
 # set iptables share network
 iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o ppp0 -j MASQUERADE
+iptables -t nat -A PREROUTING ! -s 192.168.1.0/24 -p tcp --dport 22 -j DNAT --to 192.0.2.0:22
+iptables -t nat -A PREROUTING ! -s 192.168.1.0/24 -p tcp --dport 16542 -j DNAT --to 192.168.1.1:22
 echo "post-down iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces
 echo "pre-up iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfaces
 
