@@ -1,13 +1,14 @@
 #/bin/bash
 
 wget -c https://factorio.com/get-download/stable/headless/linux64 -O factorio_headless_x64.tar.xz
-
 tar -xvJf factorio_headless_x64.tar.xz
 rm -rf factorio_headless_x64.tar.xz
+
 mv factorio /opt/factorio
 cd /opt/factorio
 mkdir saves
 mkdir maps
+
 python3 -c "
 import json
 with open('./data/server-settings.example.json', 'r', encoding='utf-8') as example:
@@ -29,10 +30,17 @@ with open('./data/server-settings.json', 'w', encoding='utf-8') as file:
 "
 ./bin/x64/factorio --create ./maps/map1.zip
 
-nohup /opt/factorio/bin/x64/factorio \
-    --config /opt/factorio/config/config.ini \
-    --port 39342 --start-server /opt/factorio/maps/test1.zip \
-    --server-settings /opt/factorio/data/server-settings.json \
-    >/dev/null 2>&1 &
+adduser --disabled-login --no-create-home --gecos factorio factorio
+chown -R factorio:factorio /opt/factorio
 
-# TODO 服务化
+echo "
+[Unit]
+Description=Factorio Headless Server
+
+[Service]
+Type=simple
+User=factorio
+ExecStart=/opt/factorio/bin/x64/factorio --config /opt/factorio/config/config.ini --port 39340 --start-server-load-latest /opt/factorio/maps/map1.zip --server-settings /opt/factorio/data/server-settings.json
+" > /etc/systemd/system/factorio.service
+
+systemctl restart factorio
