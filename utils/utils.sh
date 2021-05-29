@@ -1,16 +1,16 @@
 function install_program {
     if ! [ -x $1 ]
-    then 
+    then
         apt install -y $1
     fi
 }
 
 function crlf_to_lf {
     if ! [ -f $1 ]
-    then 
-        echo "file is not found" 
+    then
+        echo "file is not found"
         return 1
-    else 
+    else
         sed -i ':a;N;$!ba;s/\r\n/\n /g' $1
     fi
 }
@@ -27,9 +27,9 @@ function install_docker {
         curl \
         gnupg-agent \
         software-properties-common
-    
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -         
-    
+
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
     # if ! [ -x $(apt-key fingerprint 0EBFCD88) ]   # TODO 验证
     # then
     #     echo $$
@@ -63,11 +63,11 @@ function install_telegram {
     xz -d ./telegram.tar.xz
     tar -xvf  telegram.tar
     rm -f telegram.tar
-    # TODO 移动文件
+    mv ./Telegram /opt/Telegram
 }
 function install_postman {
     wget -c https://dl.pstmn.io/download/latest/linux64 -O ./postman.tar.gz
     tar -zxvf postman.tar.gz
     rm -f postman.tar.gz
-    # TODO 移动文件
+    mv ./Postman /opt/Postman
 }
