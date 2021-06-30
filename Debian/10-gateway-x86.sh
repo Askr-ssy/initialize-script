@@ -1,32 +1,37 @@
 #!/bin/bash
 # 参考 https://wiki.debian.org/NetworkConfiguration
+# need debian server
 
 # set environment
 net_devices=$(ls /sys/class/net | grep en | sort)
 net_interface=(${net_devices// / })
 wan_interface=${net_interface[0]}
-lan_interfate=${net_interface[1]}
-dns_server="192.168.1.1"
-pppoe-account=""
-pppoe-password=""
+lan_interfate=${net_interface[@]:1}
+dns_server="192.168.42.1"
+
+echo "net devices is $net_devices"
+echo "wan_interface is $net_devices"
+echo "lan_interfate is $net_devices"
 
 # ## read pppoe config
+# pppoe-account=""
+# pppoe-password=""
 # read -p "Enter your pppoe-account:" pppoe-account
 # read -p "Enter your pppoe-password:" pppoe-password
 
-# set ppoe conf
-apt install -y pppoeconf trojan privoxy bind9 bind9-utils isc-dhcp-server
+# install program
+apt install -y pppoeconf trojan privoxy nmap bind9 bind9utils isc-dhcp-server
 
 # set dns server
 rm /etc/bind/named.conf.options
 echo "\
 options {
         directory \"/var/cache/bind\";
-        listen-on port 53 { 192.168.1.1; 127.0.0.1; };
-        listen-on-v6 port 53 { ::1; };  # TODO 改为 本地端口
-        allow-query { 192.168.1.0/24; 127.0.0.1; };
+        listen-on port 53 { 192.168.42.1; 127.0.0.1; };
+        listen-on-v6 port 53 { ::1; };  # TODO ipv6 改为 本地端口
+        allow-query { 192.168.42.0/24; 127.0.0.1; };
         recursion yes;
-        allow-recursion { 192.168.1.0/24; 127.0.0.1; };
+        allow-recursion { 192.168.42.0/24; 127.0.0.1; };
 
         forward first;
         forwarders {
@@ -60,22 +65,25 @@ echo "\
                              1D )       ; Negative Cache TTL
 ;
 @       IN      NS      ns
-ns      IN      A       192.168.1.1
+ns      IN      A       192.168.42.1
+gateway IN      A       192.168.42.1
+nas     IN      A       192.168.42.200
+host1   IN      A       192.168.42.100
 " > /etc/bind/db.askr.cn
 
 
 # set dhcp server
 sed -i "s/INTERFACESv4=\"\"/INTERFACESv4=\"${lan_interfate}\"/" /etc/default/isc-dhcp-server
 echo "\
-subnet 192.168.1.0 netmask 255.255.255.0 {
-  range 192.168.1.2 192.168.1.230;
+subnet 192.168.42.0 netmask 255.255.255.0 {
+  range 192.168.42.10 192.168.42.254;
   default-lease-time 600;
   max-lease-time 7200;
   ping-check true;
   ping-timeout 2;
 
-  option routers 192.168.1.1;
-  option broadcast-address 192.168.1.255;
+  option routers 192.168.42.1;
+  option broadcast-address 192.168.42.255;
   option subnet-mask 255.255.255.0;
 
   option domain-name \"askr.cn\";
@@ -86,18 +94,17 @@ authoritative;
 " >> /etc/dhcp/dhcpd.conf
 
 # set lan address
-sed -i "s/auto ${lan_interfate}//" /etc/work/interfaces
-sed -i "s/allow-hotplug ${lan_interfate}//" /etc/work/interfaces
-sed -i "s/iface ${lan_interfate} inet dhcp//" /etc/work/interfaces
-sed -i "s/iface ${lan_interfate} inet manual//" /etc/work/interfaces
+# TODO 配置所有的接口（以dhcp的形式）
 echo "\
-auto enp0s31f6
-iface enp0s31f6 inet static
-  address 192.168.0.3/24
-  broadcast 192.168.0.255
-  network 192.168.0.0
-  gateway 192.168.0.1
-" >> /etc/work/interfaces
+
+auto ${lan_interfate[0]}
+allow-hotplug ${lan_interfate[0]}
+iface ${lan_interfate[0]} inet static
+  address 192.168.42.1/24
+  broadcast 192.168.42.255
+  network 192.168.42.0
+  gateway 192.168.42.1
+" >> /etc/network/interfaces
 
 ## 配置iptables 防火墙
 
@@ -109,20 +116,21 @@ iface enp0s31f6 inet static
 
 ## 配置反向代理服务器(nginx)
 
-# set pppoe config(pass)
-pppoeconf
+
 
 # set iptables share network
-iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o ppp0 -j MASQUERADE
+echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+echo "net.ipv4.conf.all.route_localnet=1" >> /etc/sysctl.conf
+iptables -t nat -A POSTROUTING -s 192.168.42.0/24 -o ppp0 -j MASQUERADE
 
-iptables -t nat -A PREROUTING ! -s 192.168.1.0/24 -p tcp --dport 22 -j DNAT --to 192.0.2.0:22
-iptables -t nat -A PREROUTING ! -s 192.168.1.0/24 -p tcp --dport 16542 -j DNAT --to 192.168.1.1:22
+iptables -t nat -A PREROUTING ! -s 192.168.42.0/24 -p tcp --dport 22 -j DNAT --to 192.0.2.0:22
+iptables -t nat -A PREROUTING ! -s 192.168.42.0/24 -p tcp --dport 16542 -j DNAT --to 192.168.42.1:22
 
 iptables -t nat -A PREROUTING ! -s 192.168.1.0/24 -p tcp --dport 1080 -j DNAT --to 192.0.2.0:22
 echo "post-down iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces
 echo "pre-up iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfaces
 
-init 6
+# init 6
 
 # 手动配置pppoe
 # TODO 根据 pppoe 配置的端口,配置 wan 和 lan
@@ -137,8 +145,9 @@ init 6
 # iptables -t nat -A POSTROUTING -o eth1 -d 100.100.100.101 -p tcp --dport 23 -j SNAT --to 100.100.100.44
 
 
-# echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-# echo "net.ipv4.conf.all.route_localnet=1" >> /etc/sysctl.conf
+# set pppoe config(pass)
+pppoeconf
+
 
 # ip rule add fwmark 1 lookup 42
 # ip route add local 0.0.0.0/0 dev lo table 42
