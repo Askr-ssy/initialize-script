@@ -8,19 +8,33 @@ net_interface=(${net_devices// / })
 wan_interface=${net_interface[0]}
 lan_interfate=${net_interface[@]:1}
 dns_server="192.168.42.1"
+PATH=$PATH:/usr/sbin
 
 echo "net devices is $net_devices"
 echo "wan_interface is $net_devices"
 echo "lan_interfate is $net_devices"
 
+# install program
+apt install -y pppoeconf trojan privoxy nmap bind9 bind9utils isc-dhcp-server vim
+
+# set iptables share network
+echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+echo "net.ipv4.conf.all.route_localnet = 1" >> /etc/sysctl.conf
+iptables -t nat -A POSTROUTING -s 192.168.42.0/24 -o ppp0 -j MASQUERADE
+
+iptables -t filter -A INPUT ! -s 192.168.42.0/24 -p tcp --dport 22 -j REJECT
+iptables -t filter -A INPUT ! -s 192.168.42.0/24 -p tcp --dport 1080 -j REJECT
+
+echo "post-down iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces
+echo "pre-up iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfaces
+
+# set pppoe config(pass)
 # ## read pppoe config
 # pppoe-account=""
 # pppoe-password=""
 # read -p "Enter your pppoe-account:" pppoe-account
 # read -p "Enter your pppoe-password:" pppoe-password
-
-# install program
-apt install -y pppoeconf trojan privoxy nmap bind9 bind9utils isc-dhcp-server
+pppoeconf
 
 # set dns server
 rm /etc/bind/named.conf.options
@@ -71,7 +85,6 @@ nas     IN      A       192.168.42.200
 host1   IN      A       192.168.42.100
 " > /etc/bind/db.askr.cn
 
-
 # set dhcp server
 sed -i "s/INTERFACESv4=\"\"/INTERFACESv4=\"${lan_interfate}\"/" /etc/default/isc-dhcp-server
 echo "\
@@ -103,7 +116,6 @@ iface ${lan_interfate[0]} inet static
   address 192.168.42.1/24
   broadcast 192.168.42.255
   network 192.168.42.0
-  gateway 192.168.42.1
 " >> /etc/network/interfaces
 
 ## 配置iptables 防火墙
@@ -115,20 +127,6 @@ iface ${lan_interfate[0]} inet static
 ## 配置内网穿透服务器(frp 搭配vps)
 
 ## 配置反向代理服务器(nginx)
-
-
-
-# set iptables share network
-echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-echo "net.ipv4.conf.all.route_localnet=1" >> /etc/sysctl.conf
-iptables -t nat -A POSTROUTING -s 192.168.42.0/24 -o ppp0 -j MASQUERADE
-
-iptables -t nat -A PREROUTING ! -s 192.168.42.0/24 -p tcp --dport 22 -j DNAT --to 192.0.2.0:22
-iptables -t nat -A PREROUTING ! -s 192.168.42.0/24 -p tcp --dport 16542 -j DNAT --to 192.168.42.1:22
-
-iptables -t nat -A PREROUTING ! -s 192.168.1.0/24 -p tcp --dport 1080 -j DNAT --to 192.0.2.0:22
-echo "post-down iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces
-echo "pre-up iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/interfaces
 
 # init 6
 
@@ -143,10 +141,6 @@ echo "pre-up iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/
 # # 端口映射
 # iptables -t nat -A PREROUTING -i eth0 -d 172.18.44.44 -p tcp --dport 2321 -j DNAT --to 100.100.100.101:23
 # iptables -t nat -A POSTROUTING -o eth1 -d 100.100.100.101 -p tcp --dport 23 -j SNAT --to 100.100.100.44
-
-
-# set pppoe config(pass)
-pppoeconf
 
 
 # ip rule add fwmark 1 lookup 42
