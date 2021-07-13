@@ -22,7 +22,9 @@ echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 echo "net.ipv4.conf.all.route_localnet = 1" >> /etc/sysctl.conf
 iptables -t nat -A POSTROUTING -s 192.168.42.0/24 -o ppp0 -j MASQUERADE
 
-iptables -t filter -A INPUT ! -s 192.168.42.0/24 -p tcp --dport 22 -j REJECT
+iptables -t nat -A PREROUTING ! -s 192.168.42.0/24 -p tcp --dport 22 -j DNAT --to 192.0.2.1:22
+iptables -t nat -A PREROUTING ! -s 192.168.42.0/24 -p tcp --dport 16452 -j REDIRECT --to-port 22
+
 iptables -t filter -A INPUT ! -s 192.168.42.0/24 -p tcp --dport 1080 -j REJECT
 
 echo "post-down iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces

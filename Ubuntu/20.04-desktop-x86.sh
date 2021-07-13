@@ -27,14 +27,13 @@ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | 
 # add nfs
 mkdir -p /data
 sudo chown -R nobody:nogroup /data/
-sudo echo "/data 192.168.1.0/24(rw,sync,no_subtree_check)" >> /etc/exports
+sudo echo "/data 192.168.42.0/24(rw,sync,no_subtree_check)" >> /etc/exports
 sudo chmod 777 -R /data
 sudo nfs enable
 sudo exportfs -a
 sudo systemctl restart nfs-kernel-server
 
 # add smb
-apt install samba
 echo "
 [sambashare]
     comment = Samba on Ubuntu
