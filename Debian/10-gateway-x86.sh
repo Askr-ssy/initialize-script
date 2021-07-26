@@ -15,16 +15,15 @@ echo "wan_interface is $net_devices"
 echo "lan_interfate is $net_devices"
 
 # install program
-apt install -y pppoeconf trojan privoxy nmap bind9 bind9utils isc-dhcp-server vim
+apt install -y pppoeconf trojan privoxy nmap bind9 bind9utils isc-dhcp-server vim python3 python3-pip
 
 # set iptables share network
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 echo "net.ipv4.conf.all.route_localnet = 1" >> /etc/sysctl.conf
-iptables -t nat -A POSTROUTING -s 192.168.42.0/24 -o ppp0 -j MASQUERADE
 
+iptables -t nat -A POSTROUTING -s 192.168.42.0/24 -o ppp0 -j MASQUERADE
 iptables -t nat -A PREROUTING ! -s 192.168.42.0/24 -p tcp --dport 22 -j DNAT --to 192.0.2.1:22
 iptables -t nat -A PREROUTING ! -s 192.168.42.0/24 -p tcp --dport 16452 -j REDIRECT --to-port 22
-
 iptables -t filter -A INPUT ! -s 192.168.42.0/24 -p tcp --dport 1080 -j REJECT
 
 echo "post-down iptables-save > /etc/network/iptables.up.rules" >> /etc/network/interfaces
@@ -128,6 +127,14 @@ PermitRootLogin no
 PasswordAuthentication no
 PubkeyAuthentication yes
 " >> /etc/sshd_config
+
+
+# set aliyun ddns
+pip3 install aliyun-python-sdk-alidns==2.6.29 -i https://mirrors.aliyun.com/pypi/simple
+pip3 install aliyun-python-sdk-core==2.13.35 -i https://mirrors.aliyun.com/pypi/simple
+mkdir -p /var/spool/cron/crontabs/script
+cp ./aliyun-ddns.py /var/spool/cron/crontabs/script/
+echo "*/30 * * * * root python3 /var/spool/cron/crontabs/script/aliyun-ddns.py" >> /etc/crontab
 
 ## 配置iptables 防火墙
 
