@@ -121,13 +121,19 @@ iface ${lan_interfate[0]} inet static
   nameserver 192.168.42.1
 " >> /etc/network/interfaces
 
+# set sshd_config
+echo "\
+LogLevel VERBOSE
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+" >> /etc/sshd_config
+
 ## 配置iptables 防火墙
 
 ## TODO 配置代理服务器 trojan
 
 ## 配置透明代理(iptables)
-
-## 配置内网穿透服务器(frp 搭配vps)
 
 ## 配置反向代理服务器(nginx)
 
