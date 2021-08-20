@@ -117,7 +117,8 @@ iface ${lan_interfate[0]} inet static
   address 192.168.42.1/24
   broadcast 192.168.42.255
   network 192.168.42.0
-  nameserver 192.168.42.1
+  dns-nameservers 192.168.42.1
+  dns-search askr.cn
 " >> /etc/network/interfaces
 
 # set sshd_config
