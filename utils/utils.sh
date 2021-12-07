@@ -1,3 +1,10 @@
+function isRoot() {
+	if [ "${EUID}" -ne 0 ]; then
+		echo "You need to run this script as root"
+		exit 1
+	fi
+}
+
 function install_program {
     if ! [ -x $1 ]
     then
