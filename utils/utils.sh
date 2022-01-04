@@ -5,6 +5,14 @@ function isRoot() {
 	fi
 }
 
+function check_docker {
+    if ! [ -x "$(command -v docker)" ]
+    then
+        echo "not found docker"
+        exit 1
+    fi
+}
+
 function install_program {
     if ! [ -x $1 ]
     then
@@ -56,6 +64,7 @@ function install_docker {
 function uninstall_docker {
     sudo apt-get purge docker-ce docker-ce-cli containerd.io
     sudo rm -rf /var/lib/docker
+    sudo rm -rf /var/lib/containerd
 }
 function install_qbittorrent {
     sudo add-apt-repository ppa:qbittorrent-team/qbittorrent-stable
