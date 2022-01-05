@@ -6,7 +6,7 @@
 
 source ../../utils.sh
 
-isRoot()
+isRoot
 
 apt update
 apt install wireguard

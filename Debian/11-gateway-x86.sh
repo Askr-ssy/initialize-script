@@ -15,7 +15,7 @@ echo "wan_interface is $net_devices"
 echo "lan_interfate is $net_devices"
 
 # install program
-apt install -y pppoeconf trojan privoxy nmap bind9 bind9utils isc-dhcp-server vim python3 python3-pip
+apt install -y pppoeconf privoxy nmap vim python3 python3-pip
 
 # set iptables share network
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
@@ -37,54 +37,6 @@ echo "pre-up iptables-restore < /etc/network/iptables.up.rules" >> /etc/network/
 # read -p "Enter your pppoe-password:" pppoe-password
 pppoeconf
 
-# set dns server
-rm /etc/bind/named.conf.options
-echo "\
-options {
-        directory \"/var/cache/bind\";
-        listen-on port 53 { 192.168.42.1; 127.0.0.1; };
-        listen-on-v6 port 53 { ::1; };  # TODO ipv6 改为 本地端口
-        allow-query { 192.168.42.0/24; 127.0.0.1; };
-        recursion yes;
-        allow-recursion { 192.168.42.0/24; 127.0.0.1; };
-
-        forward first;
-        forwarders {
-            8.8.8.8;
-            114.114.114.114;
-        };
-        dnssec-enable no;
-        dnssec-validation no;
-        dnssec-lookaside no;
-};
-" > /etc/bind/named.conf.options
-
-echo "\
-zone \"askr.cn\" {
-    type master;
-    file \"/etc/bind/db.askr.cn\";
-};
-" >> /etc/bind/named.conf.default-zones
-
-echo "\
-;
-; BIND data file for local loopback interface
-;
-\$TTL    60
-\$ORIGIN askr.cn.
-@       IN      SOA     ns.askr.cn. root.askr.cn. (
-                              3         ; Serial
-                             60         ; Refresh
-                             1H         ; Retry
-                             3D         ; Expire
-                             1D )       ; Negative Cache TTL
-;
-@       IN      NS      ns
-ns      IN      A       192.168.42.1
-gateway IN      A       192.168.42.1
-nas     IN      A       192.168.42.200
-host1   IN      A       192.168.42.100
-" > /etc/bind/db.askr.cn
 
 # set dhcp server
 sed -i "s/INTERFACESv4=\"\"/INTERFACESv4=\"${lan_interfate}\"/" /etc/default/isc-dhcp-server

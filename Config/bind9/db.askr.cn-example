@@ -1,0 +1,17 @@
+;
+; BIND data file for local loopback interface
+;
+$TTL    60
+$ORIGIN askr.cn.
+@       IN      SOA     ns.askr.cn. root.askr.cn. (
+                              3         ; Serial
+                             60         ; Refresh
+                             1H         ; Retry
+                             3D         ; Expire
+                             1D )       ; Negative Cache TTL
+;
+@       IN      NS      ns
+ns      IN      A       192.168.42.1
+gateway IN      A       192.168.42.1
+nas     IN      A       192.168.42.200
+host1   IN      A       192.168.42.100

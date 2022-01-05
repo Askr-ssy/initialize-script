@@ -57,7 +57,7 @@ echo ""
 mkdir -p ../.cache
 python3 -c "
 import json
-with open('../Config/trojan-client-example.json', 'r', encoding='utf-8') as file:
+with open('../Config/trojan-client.json-example', 'r', encoding='utf-8') as file:
     config = json.load(file)
 
 config['local_addr'] = '"$local_addr"'

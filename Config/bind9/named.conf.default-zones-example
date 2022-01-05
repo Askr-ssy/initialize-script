@@ -1,0 +1,4 @@
+zone "askr.cn" {
+    type master;
+    file "/etc/bind/db.askr.cn";
+};
