@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # set environment
 net_devices=$(ls /sys/class/net | grep en | sort)
@@ -79,7 +80,7 @@ echo "include \"/etc/nftables.rules\"" >> /etc/nftables.conf
 
 # set dhcp server
 sed -i "s/INTERFACESv4=\"\"/INTERFACESv4=\"${lan_interfate[0]}\"/" /etc/default/isc-dhcp-server
-sed -i "s/INTERFACESv6=\"\"/INTERFACESv6=\"${lan_interfate[0]}\"/" /etc/default/isc-dhcp-server
+# sed -i "s/INTERFACESv6=\"\"/INTERFACESv6=\"${lan_interfate[0]}\"/" /etc/default/isc-dhcp-server
 
 echo "\
 subnet $dhcp_subnet netmask $netmask {
@@ -100,6 +101,7 @@ subnet $dhcp_subnet netmask $netmask {
 authoritative;
 
 " >> /etc/dhcp/dhcpd.conf
+systemctl enable isc-dhcp-server
 
 echo "\
 
@@ -116,7 +118,7 @@ iface ${lan_interfate[0]} inet static
 # set ssh secure configuration
 su askr
 cd ~
-ssh -vT git@github.com
+ssh -vT -y git@github.com
 ssh-keygen -t rsa -b 4096 -f "local.key"
 mkdir -p ~/.ssh/
 cat local.key.pub >> ~/.ssh/authorized_keys
