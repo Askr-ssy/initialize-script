@@ -11,8 +11,8 @@ dns_server="192.168.42.1"
 PATH=$PATH:/usr/sbin
 
 echo "net devices is $net_devices"
-echo "wan_interface is $net_devices"
-echo "lan_interfate is $net_devices"
+echo "wan_interface is $wan_devices"
+echo "lan_interfate is $lan_interfate"
 
 # install program
 apt install -y pppoeconf privoxy nmap vim python3 python3-pip
