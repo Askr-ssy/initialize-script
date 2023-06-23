@@ -25,6 +25,12 @@ echo "lan_interfate is $lan_interfate"
 
 # set apt sources
 echo "\
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+" > /etc/apt/sources.list
+apt update
+apt install -y apt-transport-https ca-certificates
+
+echo "\
 # 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释
 deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
 deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
