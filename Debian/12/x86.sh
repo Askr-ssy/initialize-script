@@ -108,7 +108,13 @@ iface ${lan_interfate[0]} inet static
 " >> /etc/network/interfaces
 
 # set ssh secure configuration
+su askr
+cd ~
+ssh -vT git@github.com
 ssh-keygen -t rsa -b 4096 -f "local.key"
+mkdir -p ~/.ssh/
+cat local.key.pub >> ~/.ssh/authorized_keys
+su root
 echo "\
 LogLevel VERBOSE
 PermitRootLogin no
