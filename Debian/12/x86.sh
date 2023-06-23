@@ -54,7 +54,7 @@ echo "Acquire::http::Pipeline-Depth \"0\";" > /etc/apt/apt.conf.d/99nopipelining
 
 # install package
 apt update
-apt install -y pppoeconf nmap vim python3 python3-pip openssh-server isc-dhcp-server
+apt install -y pppoeconf nmap vim python3 python3-pip openssh-server isc-dhcp-server bind9
 
 pppoeconf
 
@@ -103,6 +103,7 @@ authoritative;
 " >> /etc/dhcp/dhcpd.conf
 systemctl enable isc-dhcp-server
 
+# set network interfaces
 echo "\
 
 auto ${lan_interfate[0]}

@@ -11,7 +11,5 @@ options {
             8.8.8.8;
             114.114.114.114;
         };
-        dnssec-enable no;
         dnssec-validation no;
-        dnssec-lookaside no;
 };

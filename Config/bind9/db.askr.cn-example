@@ -11,7 +11,5 @@ $ORIGIN askr.cn.
                              1D )       ; Negative Cache TTL
 ;
 @       IN      NS      ns
-ns      IN      A       192.168.42.1
-gateway IN      A       192.168.42.1
-nas     IN      A       192.168.42.200
-host1   IN      A       192.168.42.100
+ns      IN      A       172.16.0.1
+gateway IN      A       172.16.0.1
