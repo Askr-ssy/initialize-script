@@ -25,7 +25,7 @@ echo "lan_interfate is $lan_interfate"
 
 # set apt sources
 echo "\
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
 " > /etc/apt/sources.list
 apt update
 apt install -y apt-transport-https ca-certificates
