@@ -67,10 +67,11 @@ systemctl enable nftables
 
 # set nftables rule
 nft flush ruleset
-nft add table ip nat
-nft add chain ip nat prerouting { type nat hook prerouting priority dstnat \; policy accept \; }
-nft add chain ip nat postrouting { type nat hook postrouting priority srcnat \; policy accept \; }
-nft add rule ip nat postrouting ip saddr $lan_network oifname "ppp0" masquerade
+nft add table ip gateway
+nft add chain ip gateway prerouting { type nat hook prerouting priority dstnat \; policy accept \; }
+nft add chain ip gateway postrouting { type nat hook postrouting priority srcnat \; policy accept \; }
+nft add rule ip gateway prerouting ip saddr $lan_network iifname "ppp0" drop
+nft add rule ip gateway postrouting ip saddr $lan_network oifname "ppp0" masquerade
 
 nft list ruleset > /etc/nftables.rules
 echo "include \"/etc/nftables.rules\"" >> /etc/nftables.conf
@@ -141,4 +142,10 @@ sshd -t
 
 
 # set aliyun ddns
-pip3 install alibabacloud_alidns20150109==3.0.7 -i https://mirrors.aliyun.com/pypi/simple
+su root
+cd ~
+python3 -m venv aliyundns-venv
+/root/aliyundns-venv/bin/python3 -m pip install alibabacloud_alidns20150109==3.0.7 -i https://mirrors.aliyun.com/pypi/simple
+mkdir -p /var/spool/cron/crontabs/script
+cp ../aliyun-ddns.py /var/spool/cron/crontabs/script/
+echo "*/30 * * * * root /root/aliyundns-venv/bin/python3 /var/spool/cron/crontabs/script/aliyun-ddns.py" >> /etc/crontab
