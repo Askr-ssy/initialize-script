@@ -138,3 +138,7 @@ Protocol 2
 AllowUsers askr lain
 " >> /etc/ssh/sshd_config
 sshd -t
+
+
+# set aliyun ddns
+pip3 install alibabacloud_alidns20150109==3.0.7 -i https://mirrors.aliyun.com/pypi/simple
