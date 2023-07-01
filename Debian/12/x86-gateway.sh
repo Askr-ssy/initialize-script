@@ -70,7 +70,7 @@ nft flush ruleset
 nft add table ip nat
 nft add chain ip nat prerouting { type nat hook prerouting priority dstnat \; policy accept \; }
 nft add chain ip nat postrouting { type nat hook postrouting priority srcnat \; policy accept \; }
-nft add rule ip nat postrouting ip saddr $lan_network masquerade
+nft add rule ip nat postrouting ip saddr $lan_network oifname "ppp0" masquerade
 
 nft list ruleset > /etc/nftables.rules
 echo "include \"/etc/nftables.rules\"" >> /etc/nftables.conf
