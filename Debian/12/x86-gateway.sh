@@ -185,6 +185,8 @@ Protocol 2
 AllowUsers askr lain
 " >> /etc/ssh/sshd_config
 sshd -t
+systemctl enable sshd
+systemctl start sshd
 
 
 # set aliyun ddns
