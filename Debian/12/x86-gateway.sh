@@ -75,9 +75,6 @@ nft add rule ip gateway postrouting ip saddr $lan_network oifname "ppp0" masquer
 
 nft list ruleset > /etc/nftables.rules
 echo "include \"/etc/nftables.rules\"" >> /etc/nftables.conf
-# nft add chain inet nat prerouting { type nat hook prerouting policy accept \; }
-# nft add rule inet nat prerouting ip saddr != $lan_network tcp dport 22 counter dnat to 192.0.2.1
-
 
 # set dhcp server
 sed -i "s/INTERFACESv4=\"\"/INTERFACESv4=\"${lan_interfate[0]}\"/" /etc/default/isc-dhcp-server
@@ -116,6 +113,55 @@ iface ${lan_interfate[0]} inet static
   dns-nameservers $lan_ip
   dns-search $domain_name
 " >> /etc/network/interfaces
+
+# set dns server
+rm -rf /etc/bind/named.conf.options
+echo "\
+options {
+        directory \"/var/cache/bind\";
+        listen-on port 53 { $lan_network; };
+        listen-on-v6 port 53 { any; };
+        allow-query { $lan_network; };
+        recursion yes;
+        allow-recursion { $lan_network; };
+
+        forward first;
+        forwarders {
+            8.8.8.8;
+            114.114.114.114;
+        };
+        dnssec-validation no;
+};
+" > /etc/bind/named.conf.options
+
+echo "\
+zone \"askr.cn\" {
+    type master;
+    file \"/etc/bind/db.askr.cn\";
+};
+" >> /etc/bind/named.conf.default-zones
+
+rm -rf /etc/bind/db.askr.cn
+echo "\
+;
+; BIND data file for local loopback interface
+;
+$TTL    60
+$ORIGIN askr.cn.
+@       IN      SOA     ns.askr.cn. root.askr.cn. (
+                              3         ; Serial
+                             60         ; Refresh
+                             1H         ; Retry
+                             3D         ; Expire
+                             1D )       ; Negative Cache TTL
+;
+@       IN      NS      ns
+ns      IN      A       172.16.0.1
+gateway IN      A       172.16.0.1
+" > /etc/bind/db.askr.cn
+systemctl start bind9
+systemctl enable bind9
+
 
 # set ssh secure configuration
 su askr

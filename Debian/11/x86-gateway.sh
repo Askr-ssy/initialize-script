@@ -60,7 +60,6 @@ authoritative;
 " >> /etc/dhcp/dhcpd.conf
 
 # set lan address
-# TODO 配置所有的接口（以dhcp的形式）
 echo "\
 
 auto ${lan_interfate[0]}
