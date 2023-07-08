@@ -54,7 +54,7 @@ echo "Acquire::http::Pipeline-Depth \"0\";" > /etc/apt/apt.conf.d/99nopipelining
 
 # install package
 apt update
-apt install -y pppoeconf nmap vim python3 python3-pip openssh-server isc-dhcp-server bind9
+apt install -y pppoeconf nmap vim python3 python3-pip python3-venv openssh-server isc-dhcp-server bind9 openresolv
 
 pppoeconf
 
@@ -114,16 +114,20 @@ iface ${lan_interfate[0]} inet static
   dns-search $domain_name
 " >> /etc/network/interfaces
 
+echo "resolvconf=NO" >> /etc/resolvconf.conf
+echo "name_servers=$dns_server" >> /etc/resolvconf.conf
+echo "nameserver $dns_server" > /etc/resolv.conf
+
 # set dns server
 rm -rf /etc/bind/named.conf.options
 echo "\
 options {
         directory \"/var/cache/bind\";
-        listen-on port 53 { $lan_network; };
+        listen-on port 53 { $lan_network; 127.0.0.1; localhost; };
         listen-on-v6 port 53 { any; };
-        allow-query { $lan_network; };
+        allow-query { $lan_network; 127.0.0.1; localhost; };
         recursion yes;
-        allow-recursion { $lan_network; };
+        allow-recursion { $lan_network; 127.0.0.1; localhost; };
 
         forward first;
         forwarders {
@@ -133,6 +137,7 @@ options {
         dnssec-validation no;
 };
 " > /etc/bind/named.conf.options
+named-checkconf /etc/bind/named.conf.options
 
 echo "\
 zone \"askr.cn\" {
@@ -146,8 +151,8 @@ echo "\
 ;
 ; BIND data file for local loopback interface
 ;
-$TTL    60
-$ORIGIN askr.cn.
+\$TTL    60
+\$ORIGIN askr.cn.
 @       IN      SOA     ns.askr.cn. root.askr.cn. (
                               3         ; Serial
                              60         ; Refresh
@@ -159,18 +164,16 @@ $ORIGIN askr.cn.
 ns      IN      A       172.16.0.1
 gateway IN      A       172.16.0.1
 " > /etc/bind/db.askr.cn
-systemctl start bind9
-systemctl enable bind9
+systemctl start named
+systemctl enable named
 
 
 # set ssh secure configuration
-su askr
-cd ~
-ssh -vT -y git@github.com
+cd /home/askr
 ssh-keygen -t rsa -b 4096 -f "local.key"
 mkdir -p ~/.ssh/
 cat local.key.pub >> ~/.ssh/authorized_keys
-su root
+ssh-copy-id -f -i local.key.pub askr@127.0.0.1
 echo "\
 LogLevel VERBOSE
 PermitRootLogin no
@@ -185,12 +188,11 @@ Protocol 2
 AllowUsers askr lain
 " >> /etc/ssh/sshd_config
 sshd -t
-systemctl enable sshd
-systemctl start sshd
+systemctl enable ssh
+systemctl start ssh
 
 
 # set aliyun ddns
-su root
 cd ~
 python3 -m venv aliyundns-venv
 /root/aliyundns-venv/bin/python3 -m pip install alibabacloud_alidns20150109==3.0.7 -i https://mirrors.aliyun.com/pypi/simple
