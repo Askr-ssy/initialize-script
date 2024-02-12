@@ -8,14 +8,14 @@ wan_interface=${net_interface[0]}
 lan_interfate=${net_interface[@]:1}
 lan_interfate=($lan_interfate)
 
-lan_ip="172.16.0.1/16"
-lan_network="172.16.0.0/16"
-lan_broadcast="172.16.255.255"
+lan_ip="172.21.0.1/16"
+lan_network="172.21.0.0/16"
+lan_broadcast="172.21.255.255"
 netmask="255.255.0.0"
-dhcp_ip_min="172.16.0.2"
-dhcp_ip_max="172.16.255.254"
-dhcp_subnet="172.16.0.0"
-dhcp_route="172.16.0.1"
+dhcp_ip_min="172.21.0.2"
+dhcp_ip_max="172.21.255.254"
+dhcp_subnet="172.21.0.0"
+dhcp_route="172.21.0.1"
 domain_name="askr.cn"
 dns_server=$dhcp_route
 PATH=$PATH:/usr/sbin
@@ -63,7 +63,7 @@ echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 echo "net.ipv6.ip_forward = 1" >> /etc/sysctl.conf
 
 # enable nftables
-systemctl enable nftables
+systemctl enable nftables isc-dhcp-server named
 
 # set nftables rule
 nft flush ruleset
@@ -161,8 +161,8 @@ echo "\
                              1D )       ; Negative Cache TTL
 ;
 @       IN      NS      ns
-ns      IN      A       172.16.0.1
-gateway IN      A       172.16.0.1
+ns      IN      A       172.21.0.1
+gateway IN      A       172.21.0.1
 " > /etc/bind/db.askr.cn
 systemctl start named
 systemctl enable named
